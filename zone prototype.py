@@ -3,31 +3,49 @@ import torch
 import numpy as np
 from ultralytics import YOLO
 
-def center_check(box, vertical_flag, horizontal_flag, old_vertical, old_horizontal):
+cap = cv2.VideoCapture(0)
+
+def center_check(box, vertical_flag, horizontal_flag, old_vertical, old_horizontal, id_tag, old_id_tag, center_flag):
     if (box[2] + box[0])/2 < 140:
         horizontal_flag = -1
+        center_flag = 0
         if (old_horizontal != horizontal_flag):
-            print('left')
+            print('move camera left, or move object right')
 
     elif (box[2] + box[0])/2 > 1140:
         horizontal_flag = 1
+        center_flag = 0
         if (old_horizontal != horizontal_flag):
-            print('right')
+            print('move camera right, or move object left')
             
     elif (box[3] + box[1])/2 < 200:
         vertical_flag = -1
+        center_flag = 0
         if (old_vertical != vertical_flag):
-            print('down')
+            print('move camera up, or move object down')
             
     elif (box[3] + box[1])/2 > 520:
         vertical_flag = 1
+        center_flag = 0
         if (old_vertical != vertical_flag):
-            print('up')
+            print('move camera down, or move object up')
             
     else:
-        vertical_flag = 0 
-        horizontal_flag = 0
-    return vertical_flag, horizontal_flag, old_vertical, old_horizontal
+        id_tag = box[4]
+        if (id_tag == old_id_tag):
+            center_flag+=1
+        
+            vertical_flag = 0 
+            horizontal_flag = 0
+
+            if center_flag >= 13:
+                cap.release()
+                cv2.destroyAllWindows()
+                print("done?")
+                print(model.names[box[6]])
+        else:
+            old_id_tag = id_tag
+    return vertical_flag, horizontal_flag, old_vertical, old_horizontal, id_tag, old_id_tag, center_flag
 
 
 if torch.cuda.is_available():
@@ -37,12 +55,9 @@ else:
     device = torch.device('cpu')
     print('Using device:', device)
 
-# video_path ="rtsp://192.168.1.83/live/0/MAIN"
 
-cap = cv2.VideoCapture(0)
+model = YOLO('yolov8x.pt')
 
-model = YOLO('yolov8n.pt')
-model.confidence = 0.5
 
 x_line1=200
 x_line2 =520  # Horizontal line 2
@@ -50,6 +65,12 @@ y_line1=140
 y_line2 = 1140
 
 frame_count = 0
+
+id_tag, old_id_tag = 0,0
+max = 0
+
+vertical_flag, horizontal_flag, old_vertical, old_horizontal = 0,0,0,0
+center_flag = 0
 
 while cap.isOpened():
     # Read a frame from the video
@@ -70,7 +91,7 @@ while cap.isOpened():
         cropped_frame = resized_frame#[x_line1:, y_line1:]#[0:x_line1:x_line2, 0:y_line1:y_line2]
 
         # Visualize the results on the cropped frame
-        results = model(cropped_frame, conf=0.75)
+        results = model.track(cropped_frame, conf=0.5, tracker = "bytetrack.yaml")
 
         # Combine the original frame with the annotated detections
         annotated_cropped_frame = results[0].plot()
@@ -85,30 +106,26 @@ while cap.isOpened():
             break
         
         num_objects = len(results[0].boxes)
-
-        # If there are two or more objects, save the frame and print a statement
-        # if num_objects >= 9:
-            # cv2.imwrite("frame_{}.jpg".format(frame_count), annotated_frame)
-            # print("There are {} people in the frame".format(num_objects))
         
         boxes = results[0].boxes.data
 
-        max = 0
-        index_flag = -1
 
         if len(boxes) > 0:
+            index_flag = -1
             for box in boxes:
-                if box[4]> max:
-                    max = box[4]
+                if box[5]> max:
+                    max = box[5]
                     index_flag+=1
             
             box = boxes[index_flag]
 
+            vertical_flag, horizontal_flag, old_vertical, old_horizontal, id_tag, old_id_tag, center_flag   = center_check(box, vertical_flag, horizontal_flag, old_vertical, old_horizontal, id_tag, old_id_tag, center_flag)
+
         frame_count += 1
+
     else:
-        # Break the loop if the end of the video is reached
         break
 
 # Release the video capture object and close the display window
-cap.release()
-cv2.destroyAllWindows()
+# cap.release()
+# cv2.destroyAllWindows()
