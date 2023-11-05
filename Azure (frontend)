@@ -2,13 +2,19 @@ from flask import Flask
 
 app = Flask(__name__)
 
-@app.route('/')
+@app.route("/subpage")
+def subpage():
+  return """
+  <p> This is subpage </p>
+  """
+
+@app.route('/')  
 def homepage():
     return """
     <!DOCTYPE html>
     <html>
     <head>
-    <title>W3.CSS Template</title>
+    <title>Accessible Vision</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
@@ -18,7 +24,6 @@ def homepage():
     height: 100%;
     font-family: "Inconsolata", sans-serif;
     }
-
     </style>
     </head>
     <body>
@@ -29,17 +34,17 @@ def homepage():
     <!-- About Container -->
     <div class="w3-container" id="about">
     <div class="w3-content" style="max-width:700px">
-    <h5 class="w3-center w3-padding-64"><span class="w3-tag w3-wide">ACCESSIBLE  VISION</span></h5>
+    <h5 class="w3-center w3-padding-64"><span class="w3-tag w3-wide">ACCESSIBLE VISION</span></h5>
     <p>This web app is designed to help blind people find and recognize objects. It provides audio and tactile feedback to assist users in identifying objects.</p>
     <p>Our mission is to make the world more accessible and inclusive for everyone.</p>
     <div class="w3-panel w3-leftbar w3-light-grey">
-    <p><i>Tap anywhere to begain</i></p>
-
-    </script>
+    <p><i><a href="/subpage">Tap anywhere to begin</a></i></p> <!-- Add an anchor link to /subpage -->
+    </div>
+    </div>
+    </div>
 
     </body>
     </html>
-
     """
 
 if __name__ == '__main__':
