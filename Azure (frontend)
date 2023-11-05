@@ -5,7 +5,53 @@ app = Flask(__name__)
 @app.route("/subpage")
 def subpage():
   return """
-  <p> This is subpage </p>
+  <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Video Capture</title>
+    </head>
+    <body>
+        <body style="background-color: #f2f2f2;">
+        <video id="videoElement" autoplay></video>
+        <button id="captureButton">Capture and Upload</button>
+
+        <script>
+            const videoElement = document.getElementById('videoElement');
+            const captureButton = document.getElementById('captureButton');
+
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function (stream) {
+                    videoElement.srcObject = stream;
+                })
+                .catch(function (error) {
+                    console.error('Error accessing camera:', error);
+                });
+
+            captureButton.addEventListener('click', function () {
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.width = videoElement.videoWidth;
+                canvas.height = videoElement.videoHeight;
+                context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+                const imageData = canvas.toDataURL('image/jpeg');
+
+                // Send the captured image to the Flask backend
+                fetch('/upload', {
+                    method: 'POST',
+                    body: imageData
+                })
+                    .then(response => response.text())
+                    .then(data => {
+                        alert(data);  // Display the server's response
+                    })
+                    .catch(error => {
+                        console.error('Error uploading video:', error);
+                    });
+            });
+        </script>
+    </body>
+    </html>
+
   """
 
 @app.route('/')  
