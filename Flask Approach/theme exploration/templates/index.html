@@ -1,0 +1,17 @@
+<html>
+<head>
+    <title>Video Streaming </title>
+</head>
+<style>
+    .myCanvas{
+       background-image: url("{{ url_for('video_feed') }}"); 
+    }
+</style>
+<body>
+    <div>
+        <h1>Live Video Streaming </h1>
+        <img id="img" src = "{{ url_for('video_feed') }}">
+        <canvas class="myCanvas" height="600" width="480">
+    </div>
+</body>
+</html>
