@@ -1,17 +1,124 @@
+<!DOCTYPE html>
 <html>
 <head>
-    <title>Video Streaming </title>
+    <title>Video Streaming - CLARITY</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #f2f2f2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+        }
+        .header, .footer {
+            width: 100%;
+            background-color: #007bff;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+        }
+        .header img {
+            height: 50px;
+            vertical-align: middle;
+        }
+        .header h1 {
+            display: inline;
+            margin-left: 10px;
+            font-size: 24px;
+        }
+        .container {
+            text-align: center;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 90%;
+            margin: 20px auto;
+        }
+        h2 {
+            color: #555;
+        }
+        .intro {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        #video-container, #canvas-container {
+            margin: 20px 0;
+        }
+        img, canvas {
+            border: 2px solid #007bff;
+            border-radius: 10px;
+            max-width: 100%;
+        }
+        #refreshButton {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        #refreshButton:hover {
+            background-color: #0056b3;
+        }
+        .footer p {
+            margin: 5px 0;
+        }
+        @media (max-width: 768px) {
+            .container {
+                width: 100%;
+                padding: 20px;
+            }
+            #refreshButton {
+                width: 100%;
+                padding: 15px;
+            }
+        }
+    </style>
 </head>
-<style>
-    .myCanvas{
-       background-image: url("{{ url_for('video_feed') }}"); 
-    }
-</style>
 <body>
-    <div>
-        <h1>Live Video Streaming </h1>
-        <img id="img" src = "{{ url_for('video_feed') }}">
-        <canvas class="myCanvas" height="600" width="480">
+    <div class="header">
+        <img src= "https://github.com/sakshmenon/MakeUC/blob/main/image.png" alt="CLARITY Logo">
+        <h1>CLARITY</h1>
     </div>
+    <div class="container">
+        <h2>Welcome to the CLARITY App!</h2>
+        <div class="intro">
+            This application is designed to assist visually impaired users by leveraging advanced object detection technology to provide real-time audio and visual feedback. Enhance your spatial awareness and independence with CLARITY.
+        </div>
+        <div id="video-container">
+            <h2>Video</h2>
+            <img id="img" src="{{ url_for('video_feed') }}" alt="Live video stream">
+        </div>
+        <div id="canvas-container">
+            <h2>Captured Image</h2>
+            <canvas id="canvas" width="640px" height="480px"></canvas>
+        </div>
+        <button id="refreshButton" onclick="refreshCanvas()">Refresh Canvas</button>
+    </div>
+    <div class="footer">
+        <p>&copy; 2024 CLARITY. All rights reserved.</p>
+    </div>
+
+    <script>
+        var ctx = document.getElementById("canvas").getContext('2d');
+        var img = new Image();
+        img.src = "{{ url_for('video_feed') }}";
+
+        function refreshCanvas(){
+            ctx.drawImage(img, 0, 0);
+        };
+        window.setInterval(refreshCanvas, 50);
+    </script>
 </body>
 </html>
